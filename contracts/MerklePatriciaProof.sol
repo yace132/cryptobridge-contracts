@@ -47,8 +47,12 @@ library MerklePatriciaProof {
 
                 uint8 nextPathNibble = uint8(path[pathPtr]);
                 if(nextPathNibble > 16) {return false;}
+                
+                /**Eason: enter next for loop**/
                 nodeKey = RLP.toBytes32(currentNodeList[nextPathNibble]);
                 pathPtr += 1;
+                /**Eason: enter next for loop**/
+                
             } else if(currentNodeList.length == 2) {
             pathPtr += _nibblesToTraverse(RLP.toData(currentNodeList[0]), path, pathPtr);
 
@@ -64,6 +68,7 @@ library MerklePatriciaProof {
                     return false;
                 }
 
+                /** next for **/
                 nodeKey = RLP.toBytes32(currentNodeList[1]);
             } else {
                 return false;

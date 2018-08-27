@@ -1,12 +1,3 @@
-// Merkle-Patricia tree checks taken from eth-proof
-// (https://github.com/zmitton/eth-proof/blob/master/buildProof.js)
-// which I can't get to work with web3 1.0
-//
-// This is modified to exclude header checks. These relays modify the headers
-// for easier storage, so all we need to prove from the tx is its inclusion
-// in the txHash. The txHash is proven through a different mechanism (standard
-// Merkle tree)
-const Promise = require('bluebird').Promise;
 const Trie = require('merkle-patricia-tree');
 const rlp = require('rlp');
 const EthereumTx = require('ethereumjs-tx');
@@ -17,13 +8,16 @@ const sha3 = require('js-sha3').keccak256;
 exports.build = build;
 exports.verify = verify;
 
-function build(tx, block) {
-  return new Promise((resolve, reject) => {
-    let txTrie = new Trie();
-    async.map(block.transactions, (siblingTx, cb) => {
+function build(tx, block) { // Eason : prove tx is at block
+  return new Promise((resolve, reject) => {/******/
+    let txTrie = new Trie();// Eason : 1. Construct merkle tree for block
+    async.map(block.transactions, (siblingTx, cb) => {//tx --> cb(tx)
       let path = rlp.encode(siblingTx.transactionIndex);
       const signedSiblingTx = new EthereumTx(squanchTx(siblingTx));
-      const rawSignedSiblingTx = signedSiblingTx.serialize();
+      //Eason: match format of ethereumjs-tx
+      //https://github.com/ethereumjs/ethereumjs-tx
+      const rawSignedSiblingTx = signedSiblingTx.serialize();//rlp encode tx
+      console.log({rawSignedSiblingTx})
       txTrie.put(path, rawSignedSiblingTx, (err) => {
         if (err) { cb(err, null); }
         cb(null, true);
@@ -31,23 +25,29 @@ function build(tx, block) {
     }, (err, r) => {
       if (err) { return reject(err); }
       txTrie.findPath(rlp.encode(tx.transactionIndex), (err, rawTxNode, reminder, stack) => {
+      //Eason: 2. find merkle path by tx index
+      //return raw tx and stack ( nodes on path )
+      // May find the node without all key. Then there is some key remider
+      // ref to : https://raw.githubusercontent.com/ethereumjs/merkle-patricia-tree/master/dist/trie.js  
         const prf = {
           blockHash: Buffer.from(tx.blockHash.slice(2), 'hex'),
-          header: getRawHeader(block),
+          header: getRawHeader(block),// ?block header 
           parentNodes: rawStack(stack),
           path: rlp.encode(tx.transactionIndex),
-          value: rlp.decode(rawTxNode.value),
+          value: rlp.decode(rawTxNode.value)//tx data
         }
-        return resolve(prf)
+        
+        return resolve({prf,txTrie})
       })
     })
-  })
+ /******* */})
 }
 
 // From eth-proof (VerifyProof.trieValue)
 // Checks that the path of the tx (value) is correct
 // `value` is rlp decoded
 // `i` is the index of the root in the header: 4 = tx, 5 = receipt
+// Eason : verify tx merkle proof, j means i
 function verify(proof, j) {
   const path  = proof.path.toString('hex');
   const value = proof.value;
