@@ -13,11 +13,12 @@ function build(tx, block) { // Eason : prove tx is at block
     let txTrie = new Trie();// Eason : 1. Construct merkle tree for block
     async.map(block.transactions, (siblingTx, cb) => {//tx --> cb(tx)
       let path = rlp.encode(siblingTx.transactionIndex);
+      console.log("tx in block",{path})
       const signedSiblingTx = new EthereumTx(squanchTx(siblingTx));
       //Eason: match format of ethereumjs-tx
       //https://github.com/ethereumjs/ethereumjs-tx
       const rawSignedSiblingTx = signedSiblingTx.serialize();//rlp encode tx
-      console.log({rawSignedSiblingTx})
+      
       txTrie.put(path, rawSignedSiblingTx, (err) => {
         if (err) { cb(err, null); }
         cb(null, true);

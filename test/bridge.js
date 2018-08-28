@@ -1,7 +1,7 @@
 const txProof = require('./util/txProof.js')
 const rlp = require('rlp')
 const Bridge = artifacts.require('./Bridge.sol')
-
+const sha3 = require('js-sha3').keccak256;
 
 
 
@@ -43,66 +43,39 @@ contract('Bridge', (accounts) => {
     console.log({BridgeBat:BridgeB.address})
   });
 
-  xit ('create multiple txs before deposit',async () => {
-    for(let i=1; i<=10; i++){
-    	await web3.eth.sendTransaction({from:accounts[1],to: BridgeB.address, value:1000*i })
-    }
-  })
-
-  xit ('create deposit tx',async () => {
-    web3.eth.sendTransaction({from:accounts[1], to:BridgeB.address, value:123456},function(err, transactionHash){
-      if(!err){
-        txhash = transactionHash
-        console.log({txhash})
-    	}
-    })
-  })
-
-  it ('create multiple txs after deposit',async () => {
-    for(let i=11; i<=30; i++){
+  it ('create multiple txs for testing',async () => {
+    for(let i=1; i<=30; i++){
     	await web3.eth.sendTransaction({from:accounts[1], to:BridgeB.address, value:1000*i })
     }
   })
-
     
-  xit('get deposit tx ( create by self )', async () =>{
-    await web3.eth.getTransaction(txhash, async function(err, tx){
-      if(!err) {
-      	deposit = tx
-      	console.log({deposit})
-      	depositBlock = await web3.eth.getBlock(deposit.blockHash,true)
-      	console.log({depositBlock}) 
-      }else{
-      	console.log({err})
-      }
-    })
-  })
-
-  it('get newest tx as deposit tx', async () =>{
+  it('deposit at the latest block', async () =>{
     depositBlock = await web3.eth.getBlock('latest',true)
-    let txs = depositBlock.transactions
-    //txhash = txs[0]
-    deposit = txs[0]//await web3.eth.getTransaction(txhash)
-    console.log({depositBlock}) 
+    let txs = await depositBlock.transactions
+    let i
+    if(web3.currentProvider.host == "http://127.0.0.1:9545/"){
+      i=0
+      console.log("using truffle dev chain, only 1 tx in 1 block\n")
+    }else i=2
+    console.log("hehehehe",{depositBlock}) 
     console.log("\n******************************************\n")
+    deposit = txs[2]
+    console.log(i,"\-th transaction is the deposit transaction")
     console.log({deposit})
     assert (deposit !=null)
-    console.log("deposit hash:\n",rlp.encode(deposit.hash))
-    console.log("deposit index:\n",rlp.encode(deposit.transactionIndex))       
+    console.log("\ndeposit index (path):\n",rlp.encode(deposit.transactionIndex))       
   })
-
-   	//{"status":"1","message":"OK","result":{"blockNumber":"4000000","timeStamp":"1499633567","blockMiner":"0x1e9939daaad6924ad004c2560e90804164900341","blockReward":"5080541147548670819","uncles":[],"uncleInclusionReward":"0"}}
 
 
 /****************************************************************************/
 	
     
-  it('prepare merkle proof off chain', async () => {
+  it('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
-    console.log("prf.parentNodes",prf.parentNodes)
+    console.log("prf.parentNodes ( include itself )",prf.parentNodes)
     console.log("\n******************************************\n")
-    console.log({txTrie})
+    //console.log({txTrie})
     proof = prf
 
 
@@ -138,7 +111,7 @@ contract('Bridge', (accounts) => {
   it('verify merkle proof on chain', async () => {
  
     // Make the transaction
-    const merkleWithdraw = await BridgeA.merkleWithdraw(
+    const verifyTxPatriciaProof = await BridgeA.verifyTxPatriciaProof(
       //Eason : signature
       //deposit.v, 
       [deposit.r, deposit.s, depositBlock.transactionsRoot],
@@ -160,7 +133,7 @@ contract('Bridge', (accounts) => {
       { /*from: wallets[2][0]*/ gas: 500000 }
     );
 
-    console.log('merkleWithdraw gas usage:', merkleWithdraw.receipt.gasUsed);
-    assert(merkleWithdraw.receipt.gasUsed < 500000);
+    console.log('verifyTxPatriciaProof gas usage:', verifyTxPatriciaProof.receipt.gasUsed);
+    assert(verifyTxPatriciaProof.receipt.gasUsed < 500000);
   })    
 })
