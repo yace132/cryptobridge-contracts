@@ -5,6 +5,13 @@ import "./MerklePatriciaProof.sol";
 //import "./BytesLib.sol";
 //import "tokens/contracts/eip20/EIP20.sol";
 contract Bridge {
+
+	function deposit(address token, address toChain, uint256 amount) public {
+    	//EIP20 t = EIP20(token);
+		//t.transferFrom(msg.sender, address(this), amount);
+    	Deposit(msg.sender, toChain, token, address(this), amount);
+	}
+
     function verifyTxPatriciaProof(
         bytes32[3] b32p, // r=0, s=1, txRoot=2    
         bytes path,
@@ -20,9 +27,7 @@ contract Bridge {
 
     }
 
-    /*
-
-    function proveReceipt(
+    /*function proveReceipt(
     	bytes logs, 
     	bytes cumulativeGas, 
     	bytes logsBloom,
@@ -36,15 +41,8 @@ contract Bridge {
     	//log0 is Transfer event in EIP20
     	//https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
 	    //event Transfer(address indexed _from, address indexed _to, uint256 _value)
-	    bytes[] memory log0 = new bytes[](3);
-	    bytes[] memory topics0 = new bytes[](3);
-	    log0[0] = BytesLib.slice(logs, 0, 20);
-	    topics0[0] = BytesLib.slice(logs, 20, 32);
-	    topics0[1] = BytesLib.slice(logs, 52, 32);
-	    topics0[2] = BytesLib.slice(logs, 84, 32);
-	    log0[1] = RLPEncode.encodeList(topics0);
-	    log0[2] = BytesLib.slice(logs, 116, 32);
-
+	    //omitted
+	    
 	    //log1 is deposit event in bridge
     	//https://github.com/GridPlus/cryptobridge-contracts/blob/master/contracts/Bridge.sol
 	    // event Deposit(address indexed user, address indexed toChain,
@@ -112,5 +110,5 @@ contract Bridge {
 */
 
     function() public payable {}
-    //event Deposit(address indexed user, address indexed toChain, address indexed depositToken, address fromChain, uint256 amount);
+    event Deposit(address indexed user, address indexed toChain, address indexed depositToken, address fromChain, uint256 amount);
 }
