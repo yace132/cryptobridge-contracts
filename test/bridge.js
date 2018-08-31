@@ -30,6 +30,7 @@ function ensureByte(s) {
 	else { return `0x0${s}`; }
 }
 
+
 contract('Bridge', (accounts) => {
   assert(accounts.length > 0);
 	function isEVMException(err) {
@@ -52,7 +53,7 @@ contract('Bridge', (accounts) => {
   })
     
   it('deposit at bridgeB',async()=>{
-    const _deposit = await BridgeB.deposit(JOY, BridgeA.address, 5)
+    const _deposit = await BridgeB.deposit(JOY, BridgeA.address, 105)
     let r = _deposit.receipt
     deposit = await web3.eth.getTransaction(r.transactionHash);
     console.log({deposit})
@@ -153,26 +154,39 @@ contract('Bridge', (accounts) => {
    it('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
+      
       const path = ensureByte(rlp.encode(receiptProof.path).toString('hex'));
       const parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
-
       const checkpoint2 = txProof.verify(receiptProof, 5);
-      const encodedLogs = rProof.encodeLogs(depositReceipt.logs);
+      console.log("[ evm >> ] logs \n",depositReceipt.logs)
+      console.log("\n************** let's encode logs on client side *****************")
+      const encodedLogs = rProof.encodeLogs(depositReceipt.logs);//logs to buffer
+      console.log("\n* [ client ] logs --> buffers array* \n",encodedLogs)
+      
+
+      /*
       const encodedReceiptTest = rlp.encode([depositReceipt.status, depositReceipt.cumulativeGasUsed,
         depositReceipt.logsBloom, encodedLogs]);
       const encodedReceiptValue = rlp.encode(receiptProof.value);
 
       assert(encodedReceiptTest.equals(encodedReceiptValue) == true);
-      /*let addrs = [encodedLogs[0][0], encodedLogs[1][0]];
-      let topics = [encodedLogs[0][1], encodedLogs[1][1]];
-      let data = [encodedLogs[0][2], encodedLogs[1][2]];
+      */
 
-      let logsCat = `0x${addrs[0].toString('hex')}${topics[0][0].toString('hex')}`
-      logsCat += `${topics[0][1].toString('hex')}${topics[0][2].toString('hex')}`
-      logsCat += `${data[0].toString('hex')}${addrs[1].toString('hex')}${topics[1][0].toString('hex')}`
+
+      let addrs = [0,encodedLogs[0][0]];
+      let topics = [0,encodedLogs[0][1]];
+      let data = [0,encodedLogs[0][2]];
+      
+      console.log("\n* [ client ] buffers array --> buffers object *\n")
+      console.log({addrs},{topics},{data})
+      
+      let logsCat = `0x${addrs[1].toString('hex')}${topics[1][0].toString('hex')}`
       logsCat += `${topics[1][1].toString('hex')}${topics[1][2].toString('hex')}`
       logsCat += `${topics[1][3].toString('hex')}${data[1].toString('hex')}`;
-     
+      console.log("\n* [ client ] buffers --> string; concate string; *\n")
+      console.log({logsCat})
+      console.log("\n* [ client >> ] logsCat *\n")
+      console.log("\n*************** let's encode logs on evm *****************")
       const proveReceipt = await BridgeA.proveReceipt(
         logsCat,
         depositReceipt.cumulativeGasUsed,
@@ -180,10 +194,14 @@ contract('Bridge', (accounts) => {
         depositBlock.receiptsRoot,
         path,
         parentNodes,
-        { from: wallets[2][0], gas: 500000 }
+        { /*from: wallets[2][0], */gas: 500000 }
       )
-
-      console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);*/
+      
+      console.log("!!!!!!!!!!!! node");
+      console.log("\n\nparentNodes",receiptProof.parentNodes[0][1].toString('hex'))
+      console.log("\n\n\n")
+      assert(1==3)
+      console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
   });
 
 })
