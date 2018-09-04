@@ -4,7 +4,7 @@ const rlp = require('rlp')
 const Bridge = artifacts.require('./Bridge.sol')
 const sha3 = require('js-sha3').keccak256;
 const JOY = "0xdde12a12a6f67156e0da672be05c374e1b0a3e57"
-
+const Web3 = require('web3');
 
 // Global variables (will be references throughout the tests)
 let BridgeA;
@@ -46,14 +46,14 @@ contract('Bridge', (accounts) => {
     console.log({BridgeBat:BridgeB.address})
   });
 
-  it ('create multiple txs before deposit',async () => {
+  xit ('create multiple txs before deposit',async () => {
     for(let i=1; i<=8; i++){
-    	await web3.eth.sendTransaction({from:accounts[1], to:accounts[2], value:1000*i })
+    	await web3.eth.sendTransaction({from:accounts[1], to:accounts[2], value:1000000+i })
     }
   })
     
   it('deposit at bridgeB',async()=>{
-    const _deposit = await BridgeB.deposit(JOY, BridgeA.address, 105)
+    const _deposit = await BridgeB.deposit(JOY, BridgeA.address, 777777)
     let r = _deposit.receipt
     deposit = await web3.eth.getTransaction(r.transactionHash);
     console.log({deposit})
@@ -70,9 +70,9 @@ contract('Bridge', (accounts) => {
     console.log(depositReceipt.logs)
   })
 
-  it ('create multiple txs after deposit',async () => {
+  xit ('create multiple txs after deposit',async () => {
     for(let i=10; i<=18; i++){
-      await web3.eth.sendTransaction({from:accounts[2], to:accounts[1], value:1000*i })
+      await web3.eth.sendTransaction({from:accounts[2], to:accounts[1], value:1000000+i })
     }
   })
 
@@ -156,7 +156,7 @@ contract('Bridge', (accounts) => {
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
       
       const path = ensureByte(rlp.encode(receiptProof.path).toString('hex'));
-      const parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
+      parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
       const checkpoint2 = txProof.verify(receiptProof, 5);
       console.log("[ evm >> ] logs \n",depositReceipt.logs)
       console.log("\n************** let's encode logs on client side *****************")
@@ -198,8 +198,9 @@ contract('Bridge', (accounts) => {
       )
       
       console.log("!!!!!!!!!!!! node");
-      console.log("\n\nparentNodes",receiptProof.parentNodes[0][1].toString('hex'))
+      console.log("\n\nvalue in client proof: ( that is, parentNodes[-1] of proof )",receiptProof.parentNodes[0][1].toString('hex'))
       console.log("\n\n\n")
+      console.log(depositBlock)
       assert(1==3)
       console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
   });

@@ -109,9 +109,14 @@ contract Bridge {
 		
 		
     allLogs[0] =RLPEncode.encodeListWithPasses(receipt, passes);
-    Node(allLogs[0]);
-    ErrorCode(MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
-      path, parentNodes, receiptsRoot));
+    ValueToEvm(allLogs[0]);
+    
+    bytes32 _root;
+    bytes32 _nodeHash;
+    bytes memory _node;
+    (_root,_nodeHash,_node)=MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
+      path, parentNodes, receiptsRoot);
+    EvmReceiveRootAndValue(_root,_nodeHash,_node);
     //assert(MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
     //  path, parentNodes, receiptsRoot) == true);
    
@@ -123,6 +128,6 @@ contract Bridge {
     event Deposit(address indexed user, address indexed toChain, address indexed depositToken, address fromChain, uint256 amount);
     event EncodeLog(bytes addrs,bytes topics,bytes data);
     event EncodeReceipt(bytes _hex,bytes gas ,bytes bloom ,bytes log);
-    event Node(bytes node);
-    event ErrorCode(uint error);
+    event ValueToEvm(bytes value);
+    event EvmReceiveRootAndValue(bytes32 root,bytes32 nodeHash, bytes node);
 }
