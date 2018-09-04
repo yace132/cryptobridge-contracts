@@ -151,7 +151,7 @@ contract('Bridge', (accounts) => {
   /****************************************************************************/
   
     
-   it('Should prove the state root', async () => {
+  xit('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
       

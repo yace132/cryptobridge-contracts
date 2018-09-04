@@ -12,8 +12,8 @@ contract Bridge {
     	Deposit(msg.sender, toChain, token, address(this), amount);
 	}
 
-    /*
-    function verifyTxPatriciaProof(
+    
+    /*function verifyTxPatriciaProof(
         bytes32[3] b32p, // r=0, s=1, txRoot=2    
         bytes path,
         bytes parentNodes, 
@@ -26,8 +26,8 @@ contract Bridge {
         // Make sure this transaction is the value on the path via a MerklePatricia proof
             return MerklePatriciaProof.verify(rlpDepositTx, path, parentNodes, b32p[2]) ;
 
-    }
-    */
+    }*/
+    
 
     function proveReceipt(
     	bytes logs, 

@@ -5,10 +5,10 @@ const Bridge = artifacts.require('./Bridge.sol')
 const sha3 = require('js-sha3').keccak256;
 const JOY = "0xdde12a12a6f67156e0da672be05c374e1b0a3e57"
 const Web3 = require('web3');
-/*const Promise = require('bluebird');
+const Promise = require('bluebird');
 if (typeof web3.eth.getAccountsPromise === 'undefined') {
   Promise.promisifyAll(web3.eth, { suffix: 'Promise' });
-}*/
+}
 
 // Global variables (will be references throughout the tests)
 let BridgeA;
@@ -45,9 +45,11 @@ contract('Bridge', (accounts) => {
 
   it('can access blockchain', async () => {
   	console.log("try to get block")
+  	let b = await  web3.eth.getBlockPromise("latest")
+  	console.log(b)
     //console.log("at block",await  web3.eth.getBlock("latest").number )
-    let i= await async function() { web3.eth.getBlock("latest").number} 
-    console.log("at block",i)
+    //let i= await async function() { web3.eth.getBlock("latest").number} 
+    //console.log("at block",i)
     /*let BridgeB = await Bridge.new();
     console.log("at block",await web3.eth.getBlock("latest").number)
     console.log(BridgeB.address)
