@@ -5,6 +5,11 @@ const Bridge = artifacts.require('./Bridge.sol')
 const sha3 = require('js-sha3').keccak256;
 const JOY = "0xdde12a12a6f67156e0da672be05c374e1b0a3e57"
 const Web3 = require('web3');
+const Promise = require('bluebird');
+if (typeof web3.eth.getAccountsPromise === 'undefined') {
+  Promise.promisifyAll(web3.eth, { suffix: 'Promise' });
+}
+
 
 // Global variables (will be references throughout the tests)
 let BridgeA;
@@ -48,38 +53,38 @@ contract('Bridge', (accounts) => {
 
   xit ('create multiple txs before deposit',async () => {
     for(let i=1; i<=8; i++){
-    	await web3.eth.sendTransaction({from:accounts[1], to:accounts[2], value:1000000+i })
+    	await web3.eth.sendTransactionPromise({from:accounts[1], to:accounts[2], value:1000000+i })
     }
   })
     
   it('deposit at bridgeB',async()=>{
     const _deposit = await BridgeB.deposit(JOY, BridgeA.address, 777777)
     let r = _deposit.receipt
-    deposit = await web3.eth.getTransaction(r.transactionHash);
+    deposit = await web3.eth.getTransactionPromise(r.transactionHash);
     console.log({deposit})
 
     assert (deposit !=null)
     console.log("\ndeposit index (path):\n",rlp.encode(deposit.transactionIndex))   
     console.log("\n******************************************\n")
-    depositBlock = await web3.eth.getBlock(r.blockHash, true);
-    depositBlockSlim = await web3.eth.getBlock(r.blockHash, false);
+    depositBlock = await web3.eth.getBlockPromise(r.blockHash, true);
+    depositBlockSlim = await web3.eth.getBlockPromise(r.blockHash, false);
     console.log({depositBlock})
     console.log("\n******************************************\n")
-    depositReceipt = await web3.eth.getTransactionReceipt(r.transactionHash);
+    depositReceipt = await web3.eth.getTransactionReceiptPromise(r.transactionHash);
     console.log({depositReceipt})
     console.log(depositReceipt.logs)
   })
 
   xit ('create multiple txs after deposit',async () => {
     for(let i=10; i<=18; i++){
-      await web3.eth.sendTransaction({from:accounts[2], to:accounts[1], value:1000000+i })
+      await web3.eth.sendTransactionPromise({from:accounts[2], to:accounts[1], value:1000000+i })
     }
   })
 
 /****************************************************************************/
 	
     
-  xit('prepare patricia proof off chain', async () => {
+  it('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
     console.log("prf.parentNodes ( include itself )",prf.parentNodes)
@@ -151,7 +156,7 @@ contract('Bridge', (accounts) => {
   /****************************************************************************/
   
     
-  xit('Should prove the state root', async () => {
+  it('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
       
