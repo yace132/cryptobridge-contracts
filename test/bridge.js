@@ -14,7 +14,7 @@ if (typeof web3.eth.getAccountsPromise === 'undefined') {
 // Global variables (will be references throughout the tests)
 let BridgeA;
 let BridgeB;
-let BridgeAat;//= ...
+let BridgeAat='0x345ca3e014aaf5dca488057592ee47305d9b3e10'
 
 let deposit;
 let depositBlock;
