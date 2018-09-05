@@ -11,9 +11,13 @@ exports.encodeLogs = encodeLogs;
 
 function buildProof(receipt, block, web3) {
   return new Promise((resolve, reject) => {
+    if (typeof web3.eth.getAccountsPromise === 'undefined') {
+      Promise.promisifyAll(web3.eth, { suffix: 'Promise' });
+    }
+
     var receiptsTrie = new Trie();
     Promise.map(block.transactions, (siblingTxHash) => {
-      return web3.eth.getTransactionReceipt(siblingTxHash)
+      return web3.eth.getTransactionReceiptPromise(siblingTxHash)
     })
     .map((siblingReceipt) => {
       putReceipt(siblingReceipt, receiptsTrie, () => {
