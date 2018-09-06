@@ -46,6 +46,12 @@ contract('Bridge', (accounts) => {
 		return err.toString().includes('VM Exception') || err.toString().includes('StatusError');
 	}
 
+
+  it('Should create the Bridges for test merkle proof', async () => {
+    BridgeA = await Bridge.new();
+    console.log({BridgeAat:BridgeA.address})
+  });
+
   xit('verify merkle proof on chain', async () => {
  
     // Make the transaction
