@@ -64,7 +64,7 @@ contract('Bridge', (accounts) => {
 /****************************************************************************/
 	
     
-  xit('prepare patricia proof off chain', async () => {
+  it('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
     console.log("prf.parentNodes ( include itself )",prf.parentNodes)
@@ -109,10 +109,13 @@ contract('Bridge', (accounts) => {
   it('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
-      
+      console.log({path:receiptProof.path})
+      console.log({parents: receiptProof.parentNodes})
+      console.log("\n**********")
       const path = ensureByte(rlp.encode(receiptProof.path).toString('hex'));
       parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
       const checkpoint2 = txProof.verify(receiptProof, 5);
+      assert(checkpoint2 == true)
       console.log("[ evm >> ] logs \n",depositReceipt.logs)
       console.log("\n************** let's encode logs on client side *****************")
       const encodedLogs = rProof.encodeLogs(depositReceipt.logs);//logs to buffer

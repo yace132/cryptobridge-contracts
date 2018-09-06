@@ -42,6 +42,7 @@ function buildProof(receipt, block, web3) {
 
 var putReceipt = (siblingReceipt, receiptsTrie, cb2) => {//need siblings to rebuild trie
   var path = siblingReceipt.transactionIndex
+
   var cummulativeGas = numToBuf(siblingReceipt.cumulativeGasUsed)
   var bloomFilter = strToBuf(siblingReceipt.logsBloom)
   var setOfLogs = encodeLogs(siblingReceipt.logs)
@@ -53,7 +54,7 @@ var putReceipt = (siblingReceipt, receiptsTrie, cb2) => {//need siblings to rebu
     var postTransactionState = strToBuf(siblingReceipt.root)
     rawReceipt = rlp.encode([postTransactionState, cummulativeGas, bloomFilter, setOfLogs])
   }
-
+  console.log("receipt path of same block",rlp.encode(path))
   receiptsTrie.put(rlp.encode(path), rawReceipt, function (error) {
     error != null ? cb2(error, null) : cb2(error, true)
   })
