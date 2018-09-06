@@ -59,7 +59,7 @@ contract Bridge {
 	    log1[1] = RLPEncode.encodeList(topics1);
 	    log1[2] = BytesLib.slice(logs, 148, 64); // this is two 32 byte words
 	    
-	    EncodeLog(log1[0],log1[1],log1[2]);
+	    EncodeLog(topics1[0],topics1[1],topics1[2]);//(log1[0],log1[1],log1[2]);
 	    
 
 
@@ -95,7 +95,7 @@ contract Bridge {
 
 
 
-
+ /*
 
 	    // Check that the sender made this transaction
 	    //assert(BytesLib.toAddress(topics0[1], 12) == msg.sender);
@@ -106,7 +106,7 @@ contract Bridge {
 	    //assert(BytesLib.toUint(log1[2], 32) == pendingWithdrawals[msg.sender].amount);
 
 	    // Check that this is the right destination
-	    /*assert(BytesLib.toAddress(topics1[2], 12) == address(this));
+	   assert(BytesLib.toAddress(topics1[2], 12) == address(this));
 
 	    // Check that it's coming from the right place
 	    //assert(BytesLib.toAddress(log1[0], 0) == pendingWithdrawals[msg.sender].fromChain);
