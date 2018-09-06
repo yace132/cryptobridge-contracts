@@ -140,7 +140,16 @@ contract('Bridge', (accounts) => {
       logsCat += `${topics[1][3].toString('hex')}${data[1].toString('hex')}`;
       console.log("\n* [ client ] buffers --> string; concate string; *\n")
       console.log({logsCat})
-      console.log("\n* [ client >> ] logsCat *\n")
-      
+      console.log("\n* [ client >> ] proof *\n")
+
+      let proof = {
+        logsCat,
+        cumulativeGasUsed:depositReceipt.cumulativeGasUsed,
+        logsBloom:depositReceipt.logsBloom,
+        receiptsRoot:depositBlock.receiptsRoot,
+        path,
+        parentNodes
+      }
+      console.log(proof)
   });
 })
