@@ -141,23 +141,6 @@ contract('Bridge', (accounts) => {
       console.log("\n* [ client ] buffers --> string; concate string; *\n")
       console.log({logsCat})
       console.log("\n* [ client >> ] logsCat *\n")
-      /*console.log("\n*************** let's encode logs on evm *****************")
-      const proveReceipt = await BridgeA.proveReceipt(
-        logsCat,
-        depositReceipt.cumulativeGasUsed,
-        depositReceipt.logsBloom,
-        depositBlock.receiptsRoot,
-        path,
-        parentNodes,
-        { gas: 500000 }
-      )
       
-      console.log("!!!!!!!!!!!! node");
-      console.log("\n\nvalue in client proof: ( that is, parentNodes[-1] of proof )",receiptProof.parentNodes[0][1].toString('hex'))
-      console.log("\n\n\n")
-      console.log(depositBlock)
-      assert(1==3)
-      console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
-      */
   });
 })
