@@ -94,9 +94,8 @@ contract('Bridge', (accounts) => {
 
 
     //Eason: Create merkle proofs from deposit tx and block. Prove deposit tx is at depositBlock.
-    path = "0x204"//ensureByte(rlp.encode(proof.path).toString('hex'));// tx index
+    path = ensureByte(rlp.encode(proof.path).toString('hex'));// tx index
     parentNodes = ensureByte(rlp.encode(proof.parentNodes).toString('hex'));//merkle proofs
-    console.log("\n forge deposit index (path):\n",path)  
     const nonce = ensureByte(`0x${parseInt(deposit.nonce).toString(16)}`);
     const gasPrice = ensureByte(`0x${parseInt(deposit.gasPrice).toString(16)}`);
     const gas = ensureByte(`0x${parseInt(deposit.gas).toString(16)}`);

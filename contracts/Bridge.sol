@@ -24,7 +24,7 @@ contract Bridge {
         {
 
         // Make sure this transaction is the value on the path via a MerklePatricia proof
-            return MerklePatriciaProof.verify(rlpDepositTx, path, parentNodes, b32p[2]) ;
+            assert (MerklePatriciaProof.verify(rlpDepositTx, path, parentNodes, b32p[2])==true) ;
 
     }
     
