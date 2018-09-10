@@ -11,9 +11,13 @@ exports.encodeLogs = encodeLogs;
 
 function buildProof(receipt, block, web3) {
   return new Promise((resolve, reject) => {
+    if (typeof web3.eth.getAccountsPromise === 'undefined') {
+      Promise.promisifyAll(web3.eth, { suffix: 'Promise' });
+    }
+
     var receiptsTrie = new Trie();
     Promise.map(block.transactions, (siblingTxHash) => {
-      return web3.eth.getTransactionReceipt(siblingTxHash)
+      return web3.eth.getTransactionReceiptPromise(siblingTxHash)
     })
     .map((siblingReceipt) => {
       putReceipt(siblingReceipt, receiptsTrie, () => {
@@ -21,6 +25,9 @@ function buildProof(receipt, block, web3) {
       });
     })
     .then(() => {
+      console.log("----->\n",receiptsTrie.sem.queue)
+      console.log("----->\n",receiptsTrie.sem.queue[0].task)
+      console.log("----->\n",receiptsTrie.sem.queue[1].task)
       receiptsTrie.findPath(rlp.encode(receipt.transactionIndex), (e,rawReceiptNode,remainder,stack) => {
         var prf = {
           blockHash: Buffer.from(receipt.blockHash.slice(2),'hex'),
@@ -38,18 +45,23 @@ function buildProof(receipt, block, web3) {
 
 var putReceipt = (siblingReceipt, receiptsTrie, cb2) => {//need siblings to rebuild trie
   var path = siblingReceipt.transactionIndex
+
   var cummulativeGas = numToBuf(siblingReceipt.cumulativeGasUsed)
   var bloomFilter = strToBuf(siblingReceipt.logsBloom)
   var setOfLogs = encodeLogs(siblingReceipt.logs)
   var rawReceipt;
   if (siblingReceipt.status !== undefined && siblingReceipt.status != null) {
     var status = strToBuf(siblingReceipt.status);
+    console.log("the status?",status)
     rawReceipt = rlp.encode([status, cummulativeGas, bloomFilter, setOfLogs]);
   } else {
     var postTransactionState = strToBuf(siblingReceipt.root)
+    console.log("the root?",postTransactionState)
     rawReceipt = rlp.encode([postTransactionState, cummulativeGas, bloomFilter, setOfLogs])
   }
-
+  //console.log("receipt path of same block",rlp.encode(path))
+  //console.log("receipt of same block",rawReceipt)
+  console.log(cummulativeGas,bloomFilter,setOfLogs,rawReceipt)
   receiptsTrie.put(rlp.encode(path), rawReceipt, function (error) {
     error != null ? cb2(error, null) : cb2(error, true)
   })

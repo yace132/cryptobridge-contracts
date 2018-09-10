@@ -14,6 +14,7 @@ if (typeof web3.eth.getAccountsPromise === 'undefined') {
 // Global variables (will be references throughout the tests)
 let BridgeA;
 let BridgeB;
+let BridgeBat = "0xAf64D428352a8fcE537dA7EfB4e942212952B83D";
 
 
 let deposit;
@@ -26,7 +27,7 @@ let path;
 let parentNodes;
 let rlpDepositTxData;
 let rlpWithdrawTxData;
-let txhash
+let txhash = '0x7e711e51dbfd966947b940f9ffeac5a423fc7da1ec059163b9d9c2fb41ada17f'//'0x0747356961201071c383490cfc315d95a6e805b8c0095a20aacbdb80c820ca19'
 
 // left-pad half-bytes
 function ensureByte(s) {
@@ -41,50 +42,29 @@ contract('Bridge', (accounts) => {
 	function isEVMException(err) {
 		return err.toString().includes('VM Exception') || err.toString().includes('StatusError');
 	}
-
-
-
-  it('Should create the Bridges for test merkle proof', async () => {
-    BridgeA = await Bridge.new();
-    BridgeB = await Bridge.new();
-    console.log({BridgeAat:BridgeA.address})
-    console.log({BridgeBat:BridgeB.address})
-  });
-
-  xit ('create multiple txs before deposit',async () => {
-    for(let i=1; i<=8; i++){
-    	await web3.eth.sendTransactionPromise({from:accounts[1], to:accounts[2], value:1000000+i })
-    }
-  })
     
   it('deposit at bridgeB',async()=>{
-    const _deposit = await BridgeB.deposit(JOY, BridgeA.address, 777777)
-    let r = _deposit.receipt
-    deposit = await web3.eth.getTransactionPromise(r.transactionHash);
+    deposit = await web3.eth.getTransactionPromise(txhash);
     console.log({deposit})
 
     assert (deposit !=null)
     console.log("\ndeposit index (path):\n",rlp.encode(deposit.transactionIndex))   
     console.log("\n******************************************\n")
-    depositBlock = await web3.eth.getBlockPromise(r.blockHash, true);
-    depositBlockSlim = await web3.eth.getBlockPromise(r.blockHash, false);
+    depositBlock = await web3.eth.getBlockPromise(deposit.blockHash, true);
+    depositBlockSlim = await web3.eth.getBlockPromise(deposit.blockHash, false);
     console.log({depositBlock})
     console.log("\n******************************************\n")
-    depositReceipt = await web3.eth.getTransactionReceiptPromise(r.transactionHash);
+    depositReceipt = await web3.eth.getTransactionReceiptPromise(txhash);
     console.log({depositReceipt})
     console.log(depositReceipt.logs)
   })
 
-  xit ('create multiple txs after deposit',async () => {
-    for(let i=10; i<=18; i++){
-      await web3.eth.sendTransactionPromise({from:accounts[2], to:accounts[1], value:1000000+i })
-    }
-  })
+  
 
 /****************************************************************************/
 	
     
-  it('prepare patricia proof off chain', async () => {
+  xit('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
     console.log("prf.parentNodes ( include itself )",prf.parentNodes)
@@ -108,7 +88,7 @@ contract('Bridge', (accounts) => {
       nonce, 
       gasPrice, 
       gas, 
-      BridgeB.address,
+      BridgeBat,
       '', 
       deposit.input, 
       version, 
@@ -121,6 +101,7 @@ contract('Bridge', (accounts) => {
        
   })
 
+<<<<<<< HEAD:test/bridge.js
 /****************************************************************************/
   it('verify merkle proof on chain', async () => {
  
@@ -151,6 +132,8 @@ contract('Bridge', (accounts) => {
     assert(verifyTxPatriciaProof.receipt.gasUsed < 500000);
   })
 
+=======
+>>>>>>> proveBridgeB:test/proveBridgeB.js
 
 
   /****************************************************************************/
@@ -159,10 +142,13 @@ contract('Bridge', (accounts) => {
   xit('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
-      
+      console.log({path:receiptProof.path})
+      console.log({parents: receiptProof.parentNodes})
+      console.log("\n**********")
       const path = ensureByte(rlp.encode(receiptProof.path).toString('hex'));
       parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
       const checkpoint2 = txProof.verify(receiptProof, 5);
+      
       console.log("[ evm >> ] logs \n",depositReceipt.logs)
       console.log("\n************** let's encode logs on client side *****************")
       const encodedLogs = rProof.encodeLogs(depositReceipt.logs);//logs to buffer
@@ -190,24 +176,16 @@ contract('Bridge', (accounts) => {
       logsCat += `${topics[1][3].toString('hex')}${data[1].toString('hex')}`;
       console.log("\n* [ client ] buffers --> string; concate string; *\n")
       console.log({logsCat})
-      console.log("\n* [ client >> ] logsCat *\n")
-      console.log("\n*************** let's encode logs on evm *****************")
-      const proveReceipt = await BridgeA.proveReceipt(
-        logsCat,
-        depositReceipt.cumulativeGasUsed,
-        depositReceipt.logsBloom,
-        depositBlock.receiptsRoot,
-        path,
-        parentNodes,
-        { /*from: wallets[2][0], */gas: 500000 }
-      )
-      
-      console.log("!!!!!!!!!!!! node");
-      console.log("\n\nvalue in client proof: ( that is, parentNodes[-1] of proof )",receiptProof.parentNodes[0][1].toString('hex'))
-      console.log("\n\n\n")
-      console.log(depositBlock)
-      assert(1==3)
-      console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
-  });
+      console.log("\n* [ client >> ] proof *\n")
 
+      let proof = {
+        logsCat,
+        cumulativeGasUsed:depositReceipt.cumulativeGasUsed,
+        logsBloom:depositReceipt.logsBloom,
+        receiptsRoot:depositBlock.receiptsRoot,
+        path,
+        parentNodes
+      }
+      console.log(proof)
+  });
 })

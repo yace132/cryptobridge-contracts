@@ -25,6 +25,7 @@ function build(tx, block) { // Eason : prove tx is at block
       })
     }, (err, r) => {
       if (err) { return reject(err); }
+      console.log("----->\n",txTrie)
       txTrie.findPath(rlp.encode(tx.transactionIndex), (err, rawTxNode, reminder, stack) => {
       //Eason: 2. find merkle path by tx index
       //return raw tx and stack ( nodes on path )
