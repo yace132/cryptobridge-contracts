@@ -122,7 +122,7 @@ contract('Bridge', (accounts) => {
   })
 
 /****************************************************************************/
-  xit('verify merkle proof on chain', async () => {
+  it('verify merkle proof on chain', async () => {
  
     // Make the transaction
     const verifyTxPatriciaProof = await BridgeA.verifyTxPatriciaProof(
@@ -156,7 +156,7 @@ contract('Bridge', (accounts) => {
   /****************************************************************************/
   
     
-  it('Should prove the state root', async () => {
+  xit('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
       
