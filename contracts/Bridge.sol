@@ -13,7 +13,7 @@ contract Bridge {
 	}
 
     
-    /*function verifyTxPatriciaProof(
+    function verifyTxPatriciaProof(
         bytes32[3] b32p, // r=0, s=1, txRoot=2    
         bytes path,
         bytes parentNodes, 
@@ -26,9 +26,9 @@ contract Bridge {
         // Make sure this transaction is the value on the path via a MerklePatricia proof
             return MerklePatriciaProof.verify(rlpDepositTx, path, parentNodes, b32p[2]) ;
 
-    }*/
+    }
     
-
+/*
     function proveReceipt(
     	bytes logs, 
     	bytes cumulativeGas, 
@@ -122,7 +122,7 @@ contract Bridge {
    
 	}
 
-
+*/
 
     function() public payable {}
     event Deposit(address indexed user, address indexed toChain, address indexed depositToken, address fromChain, uint256 amount);
