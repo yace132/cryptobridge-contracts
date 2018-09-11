@@ -27,7 +27,7 @@ let path;
 let parentNodes;
 let rlpDepositTxData;
 let rlpWithdrawTxData;
-let txhash = '0x7e711e51dbfd966947b940f9ffeac5a423fc7da1ec059163b9d9c2fb41ada17f'//'0x0747356961201071c383490cfc315d95a6e805b8c0095a20aacbdb80c820ca19'
+let txhash = '0x0747356961201071c383490cfc315d95a6e805b8c0095a20aacbdb80c820ca19'
 
 // left-pad half-bytes
 function ensureByte(s) {
@@ -64,7 +64,7 @@ contract('Bridge', (accounts) => {
 /****************************************************************************/
 	
     
-  xit('prepare patricia proof off chain', async () => {
+  it('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
     console.log("prf.parentNodes ( include itself )",prf.parentNodes)
@@ -95,51 +95,29 @@ contract('Bridge', (accounts) => {
       "", 
       ""
     ]);
+	console.log(rlpDepositTxData)
+	rlpDepositTxData=rlpDepositTxData.toString('hex')
 
-
-
-       
+    let outputProof = {
+    	transactionsRoot:[deposit.r, deposit.s, depositBlock.transactionsRoot],
+     	path, 
+      	parentNodes, 
+      	rlpDepositTxData
+    }
+	console.log(rlpDepositTxData)
   })
 
-<<<<<<< HEAD:test/bridge.js
+//<<<<<<< HEAD:test/bridge.js
 /****************************************************************************/
-  it('verify merkle proof on chain', async () => {
- 
-    // Make the transaction
-    const verifyTxPatriciaProof = await BridgeA.verifyTxPatriciaProof(
-      //Eason : signature
-      //deposit.v, 
-      [deposit.r, deposit.s, depositBlock.transactionsRoot],
-      
-      //Eason: cross chain tx ( B --> A )
-      //[BridgeB.address, tokenB.address, tokenA.address], 
-      
-      //Eason: balance
-      //5,
-      
-      //Eason: merkle proof
-      path, 
-      parentNodes, 
-      //version,
-      //LAZ: passing as 'hex' results in ascii beeing received in contract
-      //Eason: tx on each chain
-      rlpDepositTxData.toString('binary'),
-      //rlpWithdrawTxData.toString('binary'),
-      { /*from: wallets[2][0]*/ gas: 500000 }
-    );
 
-    console.log('verifyTxPatriciaProof gas usage:', verifyTxPatriciaProof.receipt.gasUsed);
-    assert(verifyTxPatriciaProof.receipt.gasUsed < 500000);
-  })
-
-=======
->>>>>>> proveBridgeB:test/proveBridgeB.js
+//=======
+//>>>>>>> proveBridgeB:test/proveBridgeB.js
 
 
   /****************************************************************************/
   
     
-  xit('Should prove the state root', async () => {
+  it('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
       console.log({path:receiptProof.path})

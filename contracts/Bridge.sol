@@ -20,7 +20,7 @@ contract Bridge {
         bytes rlpDepositTx
         )
         public
-        returns (bool) 
+        //returns (bool) 
         {
 
         // Make sure this transaction is the value on the path via a MerklePatricia proof

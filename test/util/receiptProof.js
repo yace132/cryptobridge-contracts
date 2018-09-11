@@ -12,6 +12,7 @@ exports.encodeLogs = encodeLogs;
 function buildProof(receipt, block, web3) {
   return new Promise((resolve, reject) => {
     if (typeof web3.eth.getAccountsPromise === 'undefined') {
+      console.log("promisfy ************************")
       Promise.promisifyAll(web3.eth, { suffix: 'Promise' });
     }
 
@@ -63,6 +64,7 @@ var putReceipt = (siblingReceipt, receiptsTrie, cb2) => {//need siblings to rebu
   //console.log("receipt of same block",rawReceipt)
   console.log(cummulativeGas,bloomFilter,setOfLogs,rawReceipt)
   receiptsTrie.put(rlp.encode(path), rawReceipt, function (error) {
+    console.log("put", rawReceipt,"at",rlp.encode(path))
     error != null ? cb2(error, null) : cb2(error, true)
   })
 }
