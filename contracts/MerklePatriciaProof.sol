@@ -16,7 +16,7 @@ library MerklePatriciaProof {
      * @param root The root hash of the trie.
      * @return The boolean validity of the proof.
      */
-    function verify(bytes value, bytes encodedPath, bytes rlpParentNodes, bytes32 root) internal constant returns (bytes32, bytes32, bytes) {
+    function verify(bytes value, bytes encodedPath, bytes rlpParentNodes, bytes32 root) internal constant returns (bool) {
         RLP.RLPItem memory item = RLP.toRLPItem(rlpParentNodes);
         RLP.RLPItem[] memory parentNodes = RLP.toList(item);
 
@@ -28,15 +28,15 @@ library MerklePatriciaProof {
 
         bytes memory path = _getNibbleArray(encodedPath);
         
-        //if(path.length == 0) {return false;}
+        if(path.length == 0) {return false;}
 
         for (uint i=0; i<parentNodes.length; i++) {
-            //if(pathPtr > path.length) {return false;}
+            if(pathPtr > path.length) {return false;}
 
             currentNode = RLP.toBytes(parentNodes[i]);
-            if(nodeKey != keccak256(currentNode)) {return (nodeKey, keccak256(currentNode),currentNode);}//false;}
+            if(nodeKey != keccak256(currentNode)) {return false;}
             currentNodeList = RLP.toList(parentNodes[i]);
-/*
+
             if(currentNodeList.length == 17) {
                 if(pathPtr == path.length) {
                     if(keccak256(RLP.toBytes(currentNodeList[16])) == keccak256(value)) {
@@ -74,7 +74,6 @@ library MerklePatriciaProof {
             } else {
                 return false;
             }
-*/
         }
     }
 
