@@ -64,7 +64,7 @@ contract('Bridge', (accounts) => {
 /****************************************************************************/
 	
     
-  it('prepare patricia proof off chain', async () => {
+  xit('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
     console.log("prf.parentNodes ( include itself )",prf.parentNodes)
@@ -120,17 +120,17 @@ contract('Bridge', (accounts) => {
   it('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
-      console.log({path:receiptProof.path})
-      console.log({parents: receiptProof.parentNodes})
-      console.log("\n**********")
+      //console.log({path:receiptProof.path})
+      //console.log({parents: receiptProof.parentNodes})
+      //console.log("\n**********")
       const path = ensureByte(rlp.encode(receiptProof.path).toString('hex'));
       parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
       const checkpoint2 = txProof.verify(receiptProof, 5);
       
-      console.log("[ evm >> ] logs \n",depositReceipt.logs)
+      //console.log("[ evm >> ] logs \n",depositReceipt.logs)
       console.log("\n************** let's encode logs on client side *****************")
       const encodedLogs = rProof.encodeLogs(depositReceipt.logs);//logs to buffer
-      console.log("\n* [ client ] logs --> buffers array* \n",encodedLogs)
+      //console.log("\n* [ client ] logs --> buffers array* \n",encodedLogs)
       
 
       /*
@@ -147,13 +147,13 @@ contract('Bridge', (accounts) => {
       let data = [0,encodedLogs[0][2]];
       
       console.log("\n* [ client ] buffers array --> buffers object *\n")
-      console.log({addrs},{topics},{data})
+      //console.log({addrs},{topics},{data})
       
       let logsCat = `0x${addrs[1].toString('hex')}${topics[1][0].toString('hex')}`
       logsCat += `${topics[1][1].toString('hex')}${topics[1][2].toString('hex')}`
       logsCat += `${topics[1][3].toString('hex')}${data[1].toString('hex')}`;
       console.log("\n* [ client ] buffers --> string; concate string; *\n")
-      console.log({logsCat})
+      //console.log({logsCat})
       console.log("\n* [ client >> ] proof *\n")
 
       let proof = {
@@ -164,6 +164,6 @@ contract('Bridge', (accounts) => {
         path,
         parentNodes
       }
-      console.log(proof)
+      //console.log(proof)
   });
 })

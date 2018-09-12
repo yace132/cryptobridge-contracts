@@ -18,18 +18,22 @@ function buildProof(receipt, block, web3) {
 
     var receiptsTrie = new Trie();
     Promise.map(block.transactions, (siblingTxHash) => {
+      console.log("go to map 1")
       return web3.eth.getTransactionReceiptPromise(siblingTxHash)
     })
     .map((siblingReceipt) => {
+      console.log("go to map 2")
       putReceipt(siblingReceipt, receiptsTrie, () => {
         return;
       });
     })
     .then(() => {
-      console.log("----->\n",receiptsTrie.sem.queue)
-      console.log("----->\n",receiptsTrie.sem.queue[0].task)
-      console.log("----->\n",receiptsTrie.sem.queue[1].task)
+      console.log("go to then")
+      //console.log("----->\n",receiptsTrie.sem.queue)
+      //console.log("----->\n",receiptsTrie.sem.queue[0].task)
+      //console.log("----->\n",receiptsTrie.sem.queue[1].task)
       receiptsTrie.findPath(rlp.encode(receipt.transactionIndex), (e,rawReceiptNode,remainder,stack) => {
+        console.log("find path fall back")
         var prf = {
           blockHash: Buffer.from(receipt.blockHash.slice(2),'hex'),
           header:    getRawHeader(block),
@@ -45,6 +49,7 @@ function buildProof(receipt, block, web3) {
 }
 
 var putReceipt = (siblingReceipt, receiptsTrie, cb2) => {//need siblings to rebuild trie
+  console.log("go to put receipt")
   var path = siblingReceipt.transactionIndex
 
   var cummulativeGas = numToBuf(siblingReceipt.cumulativeGasUsed)
@@ -53,17 +58,18 @@ var putReceipt = (siblingReceipt, receiptsTrie, cb2) => {//need siblings to rebu
   var rawReceipt;
   if (siblingReceipt.status !== undefined && siblingReceipt.status != null) {
     var status = strToBuf(siblingReceipt.status);
-    console.log("the status?",status)
+    //console.log("the status?",status)
     rawReceipt = rlp.encode([status, cummulativeGas, bloomFilter, setOfLogs]);
   } else {
     var postTransactionState = strToBuf(siblingReceipt.root)
-    console.log("the root?",postTransactionState)
+    //console.log("the root?",postTransactionState)
     rawReceipt = rlp.encode([postTransactionState, cummulativeGas, bloomFilter, setOfLogs])
   }
   //console.log("receipt path of same block",rlp.encode(path))
   //console.log("receipt of same block",rawReceipt)
-  console.log(cummulativeGas,bloomFilter,setOfLogs,rawReceipt)
+  //console.log(cummulativeGas,bloomFilter,setOfLogs,rawReceipt)
   receiptsTrie.put(rlp.encode(path), rawReceipt, function (error) {
+    console.log("go to put")
     console.log("put", rawReceipt,"at",rlp.encode(path))
     error != null ? cb2(error, null) : cb2(error, true)
   })
