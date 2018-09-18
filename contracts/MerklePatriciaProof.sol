@@ -34,7 +34,9 @@ library MerklePatriciaProof {
             if(pathPtr > path.length) {return false;}
 
             currentNode = RLP.toBytes(parentNodes[i]);
-            if(nodeKey != keccak256(currentNode)) {return false;}
+            if(nodeKey != keccak256(currentNode)) {
+                console(1,keccak256(currentNode),nodeKey,currentNode);
+                return false;}
             currentNodeList = RLP.toList(parentNodes[i]);
 
             if(currentNodeList.length == 17) {
@@ -47,7 +49,8 @@ library MerklePatriciaProof {
                 }
 
                 uint8 nextPathNibble = uint8(path[pathPtr]);
-                if(nextPathNibble > 16) {return false;}
+                if(nextPathNibble > 16) {
+                    return false;}
                 
                 //Eason: enter next for loop
                 nodeKey = RLP.toBytes32(currentNodeList[nextPathNibble]);
@@ -61,6 +64,7 @@ library MerklePatriciaProof {
                     if(keccak256(RLP.toData(currentNodeList[1])) == keccak256(value)) {
                         return true;
                     } else {
+                        console(4,root,nodeKey,currentNode);
                         return false;
                     }
                 }
@@ -125,4 +129,6 @@ library MerklePatriciaProof {
     function _getNthNibbleOfBytes(uint n, bytes str) private constant returns (byte) {
         return byte(n%2==0 ? uint8(str[n/2])/0x10 : uint8(str[n/2])%0x10);
     }
+
+    event console(uint _case,bytes32 root,bytes32 nodeHash, bytes node);
 }

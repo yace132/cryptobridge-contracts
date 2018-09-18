@@ -52,11 +52,17 @@ contract('Bridge', (accounts) => {
     console.log("\n******************************************\n")
     depositBlock = await web3.eth.getBlockPromise(deposit.blockHash, true);
     depositBlockSlim = await web3.eth.getBlockPromise(deposit.blockHash, false);
-    console.log({depositBlock})
+    console.log({depositBlockSlim})
+    let h1 = depositBlockSlim.transactions[1]
+    let r1 = await web3.eth.getTransactionReceiptPromise(h1);
+    console.log({r1})
+    let h2 = depositBlockSlim.transactions[2]
+    let r2 = await web3.eth.getTransactionReceiptPromise(h2);
+    console.log({r2})
     console.log("\n******************************************\n")
     depositReceipt = await web3.eth.getTransactionReceiptPromise(txhash);
     console.log({depositReceipt})
-    console.log(depositReceipt.logs)
+    console.log("deposit logs",depositReceipt.logs)
   })
 
   
@@ -120,14 +126,15 @@ contract('Bridge', (accounts) => {
   it('Should prove the state root', async () => {
       // Get the receipt proof
       const receiptProof = await rProof.buildProof(depositReceipt, depositBlockSlim, web3);
-      console.log(receiptProof)
-      //console.log({path:receiptProof.path})
-      //console.log({parents: receiptProof.parentNodes})
+      console.log("node=",receiptProof.value)
+      console.log({path:receiptProof.path})
+      console.log({parents: receiptProof.parentNodes})
       //console.log("\n**********")
       const path = ensureByte(rlp.encode(receiptProof.path).toString('hex'));
+      console.log("rlp encode again?????",path)
       parentNodes = ensureByte(rlp.encode(receiptProof.parentNodes).toString('hex'));
       const checkpoint2 = txProof.verify(receiptProof, 5);
-      
+      console.log({checkpoint2})
       //console.log("[ evm >> ] logs \n",depositReceipt.logs)
       console.log("\n************** let's encode logs on client side *****************")
       const encodedLogs = rProof.encodeLogs(depositReceipt.logs);//logs to buffer
@@ -165,6 +172,6 @@ contract('Bridge', (accounts) => {
         path,
         parentNodes
       }
-      //console.log(proof)
+      console.log(proof)
   });
 })

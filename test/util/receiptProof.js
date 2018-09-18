@@ -5,6 +5,9 @@ const Trie = require('merkle-patricia-tree');
 const rlp = require('rlp');
 const async = require('async');
 const EthereumBlock = require('ethereumjs-block/from-rpc');
+if (typeof Trie.putPromise === 'undefined') {
+  Promise.promisifyAll(Trie, { suffix: 'Promise' });
+}
 
 exports.buildProof = buildProof;
 exports.encodeLogs = encodeLogs;
@@ -17,9 +20,6 @@ function buildProof(receipt, block, web3) {
       return web3.eth.getTransactionReceiptPromise(siblingTxHash)
     })
     .map( (siblingReceipt) => {
-      console.log("go to map 2")  
-      console.log("go to put receipt")
-      console.log("input",receiptsTrie._root)
       var path = siblingReceipt.transactionIndex
 
       var cummulativeGas = numToBuf(siblingReceipt.cumulativeGasUsed)
@@ -28,42 +28,33 @@ function buildProof(receipt, block, web3) {
       var rawReceipt;
       if (siblingReceipt.status !== undefined && siblingReceipt.status != null) {
         var status = strToBuf(siblingReceipt.status);
-        //console.log("the status?",status)
+        console.log("the status?",status)
         rawReceipt = rlp.encode([status, cummulativeGas, bloomFilter, setOfLogs]);
       } else {
         var postTransactionState = strToBuf(siblingReceipt.root)
-        //console.log("the root?",postTransactionState)
+        console.log("the root?",postTransactionState)
         rawReceipt = rlp.encode([postTransactionState, cummulativeGas, bloomFilter, setOfLogs])
       }
-        //console.log("receipt path of same block",rlp.encode(path))
-        //console.log("receipt of same block",rawReceipt)
-        //console.log(cummulativeGas,bloomFilter,setOfLogs,rawReceipt)
-        console.log("put input",receiptsTrie._root)
-        receiptsTrie.put(rlp.encode(path), rawReceipt, function (error) {
-          console.log("go to put")
+        console.log("let's put receipt",rawReceipt)
+        console.log("at",rlp.encode(path))
+        console.log("p.s. receipt information",{status,cummulativeGas,bloomFilter,setOfLogs})
         
-          console.log("put", rawReceipt,"at",rlp.encode(path))
-          console.log("exit",receiptsTrie._root)
-          //error != null ? cb2(error, null) : cb2(error, true)
-          return new Promise((resolve,reject) => {
-            if(error != null)reject(error);
-            else resolve(1);  
-          });
-        })
-        
+        return receiptsTrie.putPromise(rlp.encode(path), rawReceipt).then(()=>{console.log("after put tree root",receiptsTrie._root)})
       })
     .then((results) => {
       console.log("go to then")
       //console.log("----->\n",receiptsTrie.sem.queue)
       //console.log("----->\n",receiptsTrie.sem.queue[0].task)
       //console.log("----->\n",receiptsTrie.sem.queue[1].task)
-      receiptsTrie.findPath(rlp.encode(receipt.transactionIndex), (e,rawReceiptNode,remainder,stack) => {
+      let j = receipt.transactionIndex;
+      console.log("generate",j,"th receipt proof")
+      receiptsTrie.findPath(rlp.encode(j/*receipt.transactionIndex*/), (e,rawReceiptNode,remainder,stack) => {
         console.log("find path fall back")
         var prf = {
           blockHash: Buffer.from(receipt.blockHash.slice(2),'hex'),
           header:    getRawHeader(block),
           parentNodes:     rawStack(stack),
-          path:      rlp.encode(receipt.transactionIndex),
+          path:      rlp.encode(j/*receipt.transactionIndex*/),
           value:     rlp.decode(rawReceiptNode.value)
         }
         return resolve(prf)

@@ -59,7 +59,7 @@ contract Bridge {
 	    log1[1] = RLPEncode.encodeList(topics1);
 	    log1[2] = BytesLib.slice(logs, 148, 64); // this is two 32 byte words
 	    
-	    //EncodeLog(log1[0],log1[1],log1[2]);
+	    EncodeLog(log1[0],log1[1],log1[2]);
 	    // We need to hack around the RLPEncode library for the topics, which are
 	    // nested lists
 	    // Eason: encodeListWithPasses(some item, some item, ..., rlp.encode(list), ... some item, passses)
@@ -85,7 +85,7 @@ contract Bridge {
 	    passes[1] = false;
 	    passes[3] = true;
 		// ignore debug event
-		// EncodeReceipt(receipt[0],receipt[1],receipt[2],receipt[3]);
+		 EncodeReceipt(receipt[0],receipt[1],receipt[2],receipt[3]);
 	    // Eason: verify the contents of log
 
 	    // Check that the sender made this transaction
@@ -110,7 +110,7 @@ contract Bridge {
 		
 		
     allLogs[0] =RLPEncode.encodeListWithPasses(receipt, passes);
-    //ValueToEvm(allLogs[0]);
+    ValueToEvm(allLogs[0]);
     
     //bytes32 _root;
     //bytes32 _nodeHash;
@@ -118,8 +118,10 @@ contract Bridge {
     //(_root,_nodeHash,_node)=MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
     //  path, parentNodes, receiptsRoot);
     //EvmReceiveRootAndValue(_root,_nodeHash,_node);
-    assert(MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
-      path, parentNodes, receiptsRoot) == true);
+    bool hey = MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),path, parentNodes, receiptsRoot);
+      //path, parentNodes, receiptsRoot)
+    //assert(MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
+      //path, parentNodes, receiptsRoot) == true);
    
 	}
 
@@ -127,8 +129,9 @@ contract Bridge {
 
     function() public payable {}
     event Deposit(address indexed user, address indexed toChain, address indexed depositToken, address fromChain, uint256 amount);
-    //event EncodeLog(bytes addrs,bytes topics,bytes data);
-    //event EncodeReceipt(bytes _hex,bytes gas ,bytes bloom ,bytes log);
-    //event ValueToEvm(bytes value);
-    //event EvmReceiveRootAndValue(bytes32 root,bytes32 nodeHash, bytes node);
+    // event for debug
+    event EncodeLog(bytes addrs,bytes topics,bytes data);
+    event EncodeReceipt(bytes _hex,bytes gas ,bytes bloom ,bytes log);
+    event ValueToEvm(bytes value);
+    event EvmReceiveRootAndValue(bytes32 root,bytes32 nodeHash, bytes node);
 }
