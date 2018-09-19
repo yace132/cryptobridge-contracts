@@ -120,8 +120,8 @@ contract Bridge {
     //EvmReceiveRootAndValue(_root,_nodeHash,_node);
     bool hey = MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),path, parentNodes, receiptsRoot);
       //path, parentNodes, receiptsRoot)
-    //assert(MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
-      //path, parentNodes, receiptsRoot) == true);
+    assert(MerklePatriciaProof.verify(RLPEncode.encodeListWithPasses(receipt, passes),
+      path, parentNodes, receiptsRoot) == true);
    
 	}
 

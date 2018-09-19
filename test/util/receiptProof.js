@@ -27,18 +27,17 @@ function buildProof(receipt, block, web3) {
       var setOfLogs = encodeLogs(siblingReceipt.logs)
       var rawReceipt;
       if (siblingReceipt.status !== undefined && siblingReceipt.status != null) {
-        var status = strToBuf(siblingReceipt.status);
-        console.log("the status?",status)
+        var status = statusToBuf(siblingReceipt.status);
+       
         rawReceipt = rlp.encode([status, cummulativeGas, bloomFilter, setOfLogs]);
       } else {
         var postTransactionState = strToBuf(siblingReceipt.root)
-        console.log("the root?",postTransactionState)
         rawReceipt = rlp.encode([postTransactionState, cummulativeGas, bloomFilter, setOfLogs])
       }
-        console.log("let's put receipt",rawReceipt)
+        console.log("let's put rlp receipt",rawReceipt)
         console.log("at",rlp.encode(path))
-        console.log("p.s. receipt information",{status,cummulativeGas,bloomFilter,setOfLogs})
-        
+        console.log("*****     p.s. raw receipt     *********\n",{status:siblingReceipt.status,cummulativeGas:siblingReceipt.cumulativeGasUsed,bloomFilter:siblingReceipt.logsBloom,setOfLogs:siblingReceipt.logs},"\n\n")
+        console.log("*****     receipt buffers      *********\n",{status,cummulativeGas,bloomFilter,setOfLogs},"\n\n ----------------------------------------------------------------- \n")
         return receiptsTrie.putPromise(rlp.encode(path), rawReceipt).then(()=>{console.log("after put tree root",receiptsTrie._root)})
       })
     .then((results) => {
@@ -132,4 +131,8 @@ var strToBuf = (input)=>{
   }else{
     return Buffer.from(byteable(input), "hex")
   }
+}
+
+var statusToBuf = (input)=>{
+  return input == "0x0"?0:1
 }
