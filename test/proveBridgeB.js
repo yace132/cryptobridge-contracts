@@ -70,7 +70,7 @@ contract('Bridge', (accounts) => {
 /****************************************************************************/
 	
     
-  xit('prepare patricia proof off chain', async () => {
+  it('prepare patricia proof off chain', async () => {
     
     let {prf, txTrie} = await txProof.build(deposit, depositBlock)
     console.log("prf.parentNodes ( include itself )",prf.parentNodes)
@@ -85,7 +85,7 @@ contract('Bridge', (accounts) => {
     const nonce = ensureByte(`0x${parseInt(deposit.nonce).toString(16)}`);
     const gasPrice = ensureByte(`0x${parseInt(deposit.gasPrice).toString(16)}`);
     const gas = ensureByte(`0x${parseInt(deposit.gas).toString(16)}`);
-
+    console.log({path},"in tx proof")
     // Get the network version
     version = parseInt(deposit.chainId);
 
