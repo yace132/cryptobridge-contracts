@@ -6,11 +6,13 @@ const sha3 = require('js-sha3').keccak256;
 const JOY = "0xdde12a12a6f67156e0da672be05c374e1b0a3e57"
 const Web3 = require('web3');
 const Promise = require('bluebird');
+// promisfy web3.eth to interact with infura node
 if (typeof web3.eth.getAccountsPromise === 'undefined') {
   Promise.promisifyAll(web3.eth, { suffix: 'Promise' });
 }
 require('buffer').Buffer
 
+// hard-coding deposit transaction proof
 const transactionProof = 
 { transactionsRoot:
    [ '0xe58bea8d560d19add278816f7224cb9b2f41cf7ae4810847f859667331c47c66',
@@ -20,6 +22,7 @@ const transactionProof =
   parentNodes: '0xf90164f891a0452cb2fb2642df062a5a26cc1249206cba079af0d7ae996a2f9cecf0b50fba25a0e7913816fb21b39cf7e4cec67e410cf0dccdc91ed6191fadcc790155b09eb4c8a048adb0e042dafcc73183d5763dfb98a510f899d1bbcab35241a08ab346e8c5a48080808080a0d8e5df4e14c704f6373dc51d3cb47c19d2163edba962c87a22839537b96e7de98080808080808080f8cf30b8ccf8ca4885174876e800836691b794af64d428352a8fce537da7efb4e942212952b83d80b8648340f549000000000000000000000000dde12a12a6f67156e0da672be05c374e1b0a3e57000000000000000000000000345ca3e014aaf5dca488057592ee47305d9b3e1000000000000000000000000000000000000000000000000000000000000bde311ca0e58bea8d560d19add278816f7224cb9b2f41cf7ae4810847f859667331c47c66a0316e16099e7119a3ca03706b74d94267d5931021665733864d626cf64f15c571',
   rlpDepositTxData: "0xf8ca4885174876e800836691b794af64d428352a8fce537da7efb4e942212952b83d80b8648340f549000000000000000000000000dde12a12a6f67156e0da672be05c374e1b0a3e57000000000000000000000000345ca3e014aaf5dca488057592ee47305d9b3e1000000000000000000000000000000000000000000000000000000000000bde311ca0e58bea8d560d19add278816f7224cb9b2f41cf7ae4810847f859667331c47c66a0316e16099e7119a3ca03706b74d94267d5931021665733864d626cf64f15c571"
 }
+// hard-coding deposit transaction receipt proof
 const proof = 
 { logsCat: '0xaf64d428352a8fce537da7efb4e942212952b83da856e8f098813135735b4d4f52d96083d1dbb35fd5603ff424661413f59c281000000000000000000000000007c7d469878c23c8414d7bd747476555cd3ccc8a000000000000000000000000345ca3e014aaf5dca488057592ee47305d9b3e10000000000000000000000000dde12a12a6f67156e0da672be05c374e1b0a3e57000000000000000000000000af64d428352a8fce537da7efb4e942212952b83d00000000000000000000000000000000000000000000000000000000000bde31',
   cumulativeGasUsed: 27199,
@@ -54,72 +57,71 @@ function ensureByte(s) {
 
 
 contract('Bridge', (accounts) => {
-  assert(accounts.length > 0);
+	assert(accounts.length > 0);
 	function isEVMException(err) {
 		return err.toString().includes('VM Exception') || err.toString().includes('StatusError');
 	}
 
+	it('create Bridge contract on A chain to verify patricia proof', async () => {
+    	BridgeA = await Bridge.new();
+    	console.log({deploy_BridgeA_at:BridgeA.address})
+  	});
 
-  it('Should create the Bridges for test merkle proof', async () => {
-    BridgeA = await Bridge.new();
-    console.log({BridgeAat:BridgeA.address})
-  });
-
-  it('verify tx proof on chain', async () => {
-    let rlpDepositTxData = transactionProof.rlpDepositTxData
-    rlpDepositTxData = Buffer.from(rlpDepositTxData)
-    // Make the transaction
-    const verifyTxPatriciaProof = await BridgeA.verifyTxPatriciaProof(
-      //Eason : signature
-      //deposit.v, 
-      transactionProof.transactionsRoot,
-      
-      //Eason: cross chain tx ( B --> A )
-      //[BridgeB.address, tokenB.address, tokenA.address], 
-      
-      //Eason: balance
-      //5,
-      
-      //Eason: merkle proof
-      transactionProof.path, 
-      transactionProof.parentNodes, 
-      //version,
-      //LAZ: passing as 'hex' results in ascii beeing received in contract
-      //Eason: tx on each chain
-      rlpDepositTxData.toString("binary"),
-      //rlpWithdrawTxData.toString('binary'),
-      { /*from: wallets[2][0]*/ gas: 500000 }
-    );
-
-    console.log('verifyTxPatriciaProof gas usage:', verifyTxPatriciaProof.receipt.gasUsed);
-    assert(verifyTxPatriciaProof.receipt.gasUsed < 500000);
-  })
-
-
-
-  /****************************************************************************/
+  	it('verify tx proot on A chain', async () => {
+    	let rlpDepositTxData = transactionProof.rlpDepositTxData
+    	rlpDepositTxData = Buffer.from(rlpDepositTxData)
+    	const verifyTxPatriciaProof = await BridgeA.verifyTxPatriciaProof(
+	      /**
+	       * Eason : omit signature parameter
+	       * deposit.v,
+	       */ 
+	      transactionProof.transactionsRoot,
+	      /**
+	       * Eason: omit cross chain tx ( B --> A ) parameters
+	       * [BridgeB.address, tokenB.address, tokenA.address], 
+	       */
+	      /**
+	       * Eason: omit balance
+	       * 5,
+	       */
+	      
+	      // Eason: merkle proof parameters 
+	      transactionProof.path, 
+	      transactionProof.parentNodes, 
+	      /** 
+	       * omit version parameter
+	       * version,
+	       */
+	      // Eason: tx parameters on each chain
+	      rlpDepositTxData.toString("binary"),
+	      /** 
+	       * omit withdraw transaction parameter
+	       * rlpWithdrawTxData.toString('binary'),
+	       */
+	      {
+			/**
+			 * omit parameters for oracle
+			 * from: wallets[2][0],
+			 */ 
+			 gas: 500000 }
+	    );
+	    console.log('verifyTxPatriciaProof gas usage:', verifyTxPatriciaProof.receipt.gasUsed);
+	    assert(verifyTxPatriciaProof.receipt.gasUsed < 500000);
+	})
   
     
-  it('Should verify the state root', async () => {
-      let {logsCat,cumulativeGasUsed,logsBloom,receiptsRoot,path,parentNodes} = proof
-      console.log("\n*************** let's encode logs on evm *****************")
-      console.log({logsCat,cumulativeGasUsed})
-      const proveReceipt = await BridgeA.proveReceipt(
-        logsCat,
-        cumulativeGasUsed,
-        logsBloom,
-        receiptsRoot,
-        path,
-        parentNodes,
-        { gas: 500000 }
-      )
-      
-      console.log("!!!!!!!!!!!! node");
-      //console.log("\n\nvalue in client proof: ( that is, parentNodes[-1] of proof )",parentNodes[0][1].toString('hex'))
-      console.log("\n\n\n")
-      //console.log(depositBlock)
-      //assert(1==3)
-      console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
-  });
+	it('verify the receipt proof on A chain', async () => {
+	    let {logsCat,cumulativeGasUsed,logsBloom,receiptsRoot,path,parentNodes} = proof
+	    const proveReceipt = await BridgeA.proveReceipt(
+	    	logsCat,
+	        cumulativeGasUsed,
+	        logsBloom,
+	        receiptsRoot,
+	        path,
+	        parentNodes,
+	        { gas: 500000 }
+	    )
+	    console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
+	});
 
 })

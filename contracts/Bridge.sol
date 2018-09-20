@@ -20,12 +20,9 @@ contract Bridge {
         bytes rlpDepositTx
         )
         public
-        //returns (bool) 
         {
-
         // Make sure this transaction is the value on the path via a MerklePatricia proof
             assert(MerklePatriciaProof.verify(rlpDepositTx, path, parentNodes, b32p[2]) == true);
-
     }
     
 
@@ -39,14 +36,14 @@ contract Bridge {
     )
     public
     {
-    	//Eason: There are 2 events in deposit tx
-    	//log0 is Transfer event in EIP20
-    	//https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
-	    //event Transfer(address indexed _from, address indexed _to, uint256 _value)
-	    //omitted
+    	// Eason: There are 2 events in deposit tx
+    	// log0 is Transfer event in EIP20
+    	// https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
+	    // event Transfer(address indexed _from, address indexed _to, uint256 _value)
+	    // omit it
 	    
-	    //log1 is deposit event in bridge
-    	//https://github.com/GridPlus/cryptobridge-contracts/blob/master/contracts/Bridge.sol
+	    // log1 is deposit event in bridge
+    	// https://github.com/GridPlus/cryptobridge-contracts/blob/master/contracts/Bridge.sol
 	    // event Deposit(address indexed user, address indexed toChain,
 		// address indexed depositToken, address fromChain, uint256 amount); 
 	    bytes[] memory log1 = new bytes[](3);
