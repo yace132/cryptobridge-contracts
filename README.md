@@ -114,11 +114,19 @@ Arguments:
   This is a fixed size because there are two events emitted: `Transfer` ([ERC20](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md)) and `Deposit` ([Bridge](https://github.com/GridPlus/cryptobridge-contracts/blob/master/contracts/Bridge.sol)). 
   
   log0 is `Transfer`.
+  
+  ```
   event Transfer(address indexed _from, address indexed _to, uint256 _value)
+  ```
+  
   omit it for simplicity.
+  
   log1 is `Deposit`.
+  
+  ```
   event Deposit(address indexed user, address indexed toChain, address indexed depositToken, address fromChain, uint256 amount) 
-
+  ```
+  
   `topics` correspond to the indexed log parameters in the order the appear in the contract's definition. `data` are the unindexed arguments. `addrs` correspond to the address of the contract that emitted the log (regardless of which blockchain it is deployed on). To see this encoding in action, see `encodeLogs()` in `test/util/receiptProof.js`. Note that the array returned by `encodeLogs()` must have each item encoded to hex and concatenated before sending the whole payload to `proveReceipt()`.    
 
 ### withdraw (blockNum, timestamp, prevHeader, rootN, proof)
