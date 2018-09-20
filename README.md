@@ -119,7 +119,7 @@ Arguments:
   event Transfer(address indexed _from, address indexed _to, uint256 _value)
   ```
   
-  omit it for simplicity.
+  Omit it for simplicity.
   
   log1 is `Deposit`.
   
