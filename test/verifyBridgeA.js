@@ -121,7 +121,6 @@ contract('Bridge', (accounts) => {
 	        parentNodes,
 	        { gas: 500000 }
 	    )
-	    assert (1==3)
 	    console.log('proveReceipt gas usage:', proveReceipt.receipt.gasUsed);
 	});
 

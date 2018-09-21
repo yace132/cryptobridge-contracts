@@ -9,40 +9,41 @@ exports.build = build;
 exports.verify = verify;
 
 function build(tx, block) { // Eason : prove tx is at block
-  return new Promise((resolve, reject) => {/******/
+  return new Promise((resolve, reject) => {
     let txTrie = new Trie();// Eason : 1. Construct merkle tree for block
     async.map(block.transactions, (siblingTx, cb) => {//tx --> cb(tx)
       let path = rlp.encode(siblingTx.transactionIndex);
-      console.log("tx in block",{path})
+      /**
+       * Eason: match format of ethereumjs-tx
+       * https://github.com/ethereumjs/ethereumjs-tx
+       */
       const signedSiblingTx = new EthereumTx(squanchTx(siblingTx));
-      //Eason: match format of ethereumjs-tx
-      //https://github.com/ethereumjs/ethereumjs-tx
       const rawSignedSiblingTx = signedSiblingTx.serialize();//rlp encode tx
-      
       txTrie.put(path, rawSignedSiblingTx, (err) => {
         if (err) { cb(err, null); }
         cb(null, true);
       })
     }, (err, r) => {
       if (err) { return reject(err); }
-      console.log("----->\n",txTrie)
       txTrie.findPath(rlp.encode(tx.transactionIndex), (err, rawTxNode, reminder, stack) => {
-      //Eason: 2. find merkle path by tx index
-      //return raw tx and stack ( nodes on path )
-      // May find the node without all key. Then there is some key remider
-      // ref to : https://raw.githubusercontent.com/ethereumjs/merkle-patricia-tree/master/dist/trie.js  
+      /**
+       * Eason: 2. find merkle path by tx index
+       * return raw tx and stack ( nodes on path )
+       * May find the node without all key. Then there is some key remider
+       * ref to : https://raw.githubusercontent.com/ethereumjs/merkle-patricia-tree/master/dist/trie.js  
+       */
         const prf = {
           blockHash: Buffer.from(tx.blockHash.slice(2), 'hex'),
-          header: getRawHeader(block),// ?block header 
+          header: getRawHeader(block),// block header 
           parentNodes: rawStack(stack),
           path: rlp.encode(tx.transactionIndex),
-          value: rlp.decode(rawTxNode.value)//tx data
+          value: rlp.decode(rawTxNode.value)// tx data
         }
         
         return resolve({prf,txTrie})
       })
     })
- /******* */})
+ })
 }
 
 // From eth-proof (VerifyProof.trieValue)
@@ -64,19 +65,17 @@ function verify(proof, j) {
     var nodeKey = txRoot;
     var pathPtr = 0;
     for (var i = 0 ; i < len ; i++) {
-      console.log({nodeKey})
+      //console.log("verify",{nodeKey})
       currentNode = parentNodes[i];
       const encodedNode = Buffer.from(sha3(rlp.encode(currentNode)),'hex');
       if(!nodeKey.equals(encodedNode)){
-        
-        //if(i!=0)//force the root check pass ( this line is just for debug )
         return false;
       }
       if(pathPtr > path.length){
         return false
       }
       switch(currentNode.length){
-        case 17://branch node
+        case 17:// branch node
           if(pathPtr == path.length){
             if(currentNode[16] == rlp.encode(value)){
               return true;
@@ -89,13 +88,13 @@ function verify(proof, j) {
           break;
         case 2:
           pathPtr += nibblesToTraverse(currentNode[0].toString('hex'), path, pathPtr)
-          if(pathPtr == path.length){//leaf node
+          if(pathPtr == path.length){// leaf node
             if(currentNode[1].equals(rlp.encode(value))){
               return true
             }else{
               return false
             }
-          }else{//extension node
+          }else{// extension node
             nodeKey = currentNode[1]
           }
           break;
